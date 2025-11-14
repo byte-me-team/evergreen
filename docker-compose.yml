@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -14,12 +14,15 @@ services:
   web:
     build: .
     command: npm run dev
-    ports:
-      - "3000:3000"
+    working_dir: /app
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/appdb?schema=public
+    ports:
+      - "3000:3000"
     depends_on:
       - db
+    volumes:
+      - .:/app
 
 volumes:
   pgdata:
