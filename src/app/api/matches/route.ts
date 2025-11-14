@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { createMatch } from "@/lib/services";
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { user1Email, user2Email } = body as {
+      user1Email?: string;
+      user2Email?: string;
+    };
+
+    if (!user1Email || !user2Email) {
+      return NextResponse.json(
+        { error: "user1Email and user2Email are required" },
+        { status: 400 }
+      );
+    }
+
+    const [user1, user2] = await Promise.all([
+      prisma.user.findUnique({ where: { email: user1Email } }),
+      prisma.user.findUnique({ where: { email: user2Email } }),
+    ]);
+
+    if (!user1 || !user2) {
+      return NextResponse.json(
+        { error: "Both users must exist and have saved preferences" },
+        { status: 400 }
+      );
+    }
+
+    const match = await createMatch(user1.id, user2.id);
+
+    return NextResponse.json(match, { status: 200 });
+  } catch (err: any) {
+    console.error("POST /api/matches error:", err);
+    return NextResponse.json(
+      { error: "Failed to create match" },
+      { status: 500 }
+    );
+  }
+}
+

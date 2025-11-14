@@ -9,11 +9,13 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
+  id            String           @id @default(cuid())
   name          String?
-  email         String   @unique
-  createdAt     DateTime @default(now())
+  email         String           @unique
+  createdAt     DateTime         @default(now())
   preferences   UserPreferences?
+  matchesAsUser1 Match[]         @relation("MatchesAsUser1")
+  matchesAsUser2 Match[]         @relation("MatchesAsUser2")
 }
 
 model UserPreferences {
@@ -21,9 +23,27 @@ model UserPreferences {
   userId         String   @unique
   user           User     @relation(fields: [userId], references: [id])
 
-  rawText        String   // "i like to go for walks outside..."
-  normalizedJson Json     // LLM result, structured
+  rawText        String
+  normalizedJson Json
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model Match {
+  id        String   @id @default(cuid())
+
+  user1Id   String
+  user1     User     @relation("MatchesAsUser1", fields: [user1Id], references: [id])
+
+  user2Id   String
+  user2     User     @relation("MatchesAsUser2", fields: [user2Id], references: [id])
+
+  // snapshot of preferences that were used for this match (optional but useful)
+  user1Preferences Json
+  user2Preferences Json
+
+  suggestionsJson  Json   // LLM output: list of suggested activities
+
+  createdAt DateTime @default(now())
 }

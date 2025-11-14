@@ -4,6 +4,13 @@
 
 ### Getting Started
 
+#### add Featherless.ai api key
+
+to the .env file add (replace ... with actual key):
+```
+FEATHERLESS_API_KEY=...
+```
+
 #### run the dev server
 
 to start the server run:
