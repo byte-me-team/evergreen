@@ -59,7 +59,6 @@ to create an encryption key run this script:
 
 Open localhost:3000 with your browser to see the website.
 
-
 To start the Prisma Studio dashboard on port 5555, run:
 
 ```bash
@@ -90,7 +89,6 @@ The goal is to encourage small steps outside, discover enjoyable activities, and
 
 The system suggests relevant activities from public event sources (e.g. Espoo Linked Events), ranks them using AI, and nudges the senior with lightweight, adjustable reminders. Seniors remain fully in control: they choose, we assist.
 
-
 ## 2. Core Requirements
 
 - Motivate seniors to try things without pressure.  
@@ -112,8 +110,8 @@ The system suggests relevant activities from public event sources (e.g. Espoo Li
 - The system computes a joint profile (overlap of interests, times, budget).  
 - Suggestions are adapted for activities they can enjoy together.
 
-### 3.3 Daily suggestions  
-- Senior receives 1–3 gentle nudges each day.  
+### 3.3 Manual requests  
+- Senior can issue a request at any time of the day.  
 - Suggestions contain a short reason and a link to see more details.  
 - Seniors choose “Interested / Not now / Don’t show again”.
 
@@ -142,17 +140,12 @@ The system suggests relevant activities from public event sources (e.g. Espoo Li
   Periodically pulls public events (e.g. Linked Events Espoo).  
   Normalizes and pushes them to the backend.
 
-- **AI Layer (Featherless + optionally n8n AI Agent)**  
+- **AI Layer (Featherless AI Agent)**  
   Handles:  
   - Free-text profile extraction  
   - Joint profile creation  
   - Semantic scoring of events  
   - Optional micro-messages for nudges
-
-- **Notification Layer (n8n)**  
-  Sends emails/WhatsApp/SMS with suggestions.  
-  Triggers planning workflows.  
-  Handles scheduling.
 
 ## 5. AI Integration Strategy
 
@@ -167,33 +160,23 @@ Used for all text understanding and scoring:
 
 Featherless is called by the backend using standard chat completion API endpoints.
 
-### 5.2 n8n — orchestration and automation  
-n8n handles:
-
-- Scheduled event fetching  
-- Scheduled suggestion delivery  
-- Workflow branching (e.g. if senior taps “interested”, trigger plan creation)  
-- Optional AI Agent node for rewriting nudges or tone adjustments
-
-n8n does **not** replace Featherless for core ranking logic.  
-Instead, it organizes when the calls happen.
-
 ## 6. Data Models
 
 ### 6.1 User profile (stored after onboarding)  
 ```json
 {
-  "user_id": "...",
-  "hobbies": [],
-  "disliked": [],
-  "preferred_time_of_day": [],
-  "social_preference": "alone | small_group | family",
-  "physical_intensity": 1,
-  "noise_tolerance": 1,
-  "travel_radius_km": 5,
-  "tags": [],
-  "availability": ["weekday_evenings", "weekends"],
-  "updated_at": "..."
+  "id": "...",
+  "name" : "...",
+  "email" : "...",
+  "emailVerified": "...",
+  "passwordHash": "...",
+  "city": "...",
+  "createdAt" : "...",
+  "updatedAt" : "...",
+  "preferences": [],
+  "relatives": [],
+  "accounts" : [],
+  "sessions" : []
 }
 ```
 
@@ -201,27 +184,27 @@ Instead, it organizes when the calls happen.
 ```json
 {
   "id": "...",
+  "sourceId": "...",
   "title": "...",
   "description": "...",
-  "location": {"lat": ..., "lon": ..., "district": "..."},
+  "summary": "...",
   "start_time": "...",
   "end_time": "...",
+  "locationName": "...",
+  "locationAddress": {"lat": ..., "lon": ..., "district": "..."},
+  "city": "...",
+  "price": "...",
   "tags": [],
-  "price": "free | paid",
-  "source": "Linked Events"
+  "sourceUrl": "...",
+  "rawJson": "...",
+  "createdAt": "...",
+  "updatedAt": "...",
+  "matchedSuggestions": []
 }
+
 ```
 
-### 6.3 Scoring result  
-```json
-{
-  "event_id": "...",
-  "score": 1,
-  "reason": "..."
-}
-```
-
-### 6.4 Joint profile  
+### 6.3 Joint profile  
 ```json
 {
   "shared_hobbies": [],
