@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 
+type Params = Promise<{ id: string }>
+
 export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ id?: string }> | { id?: string } }
@@ -81,3 +83,4 @@ export async function PATCH(
     );
   }
 }
+
