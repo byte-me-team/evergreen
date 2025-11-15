@@ -4,6 +4,16 @@
 
 ### Getting Started
 
+#### environment variables
+
+Copy `.env.example` to `.env` and adjust the values as needed:
+
+```bash
+cp .env.example .env
+```
+
+`DATABASE_URL` points to your local Postgres instance (e.g. `localhost`), while `DATABASE_URL_DOCKER` keeps the containers wired to the in-compose `db` service. Update `NEXT_PUBLIC_APP_URL` if you expose the frontend on a different hostname.
+
 #### add Featherless.ai api key
 
 to the .env file add (replace ... with actual key):
@@ -15,8 +25,10 @@ FEATHERLESS_API_KEY=...
 
 to start the server run:
 ```bash
-docker compose up
+docker compose up web
 ```
+
+This command installs dependencies (cached in the `web-node-modules` volume), generates the Prisma client, pushes the schema, and starts the Next.js dev server on port 3000.
 
 ### create an encryption key
 
@@ -29,7 +41,14 @@ to create an encryption key run this script:
 
 Open localhost:3000 with your browser to see the website.
 
-Open localhost:5555 with your browser to see the database using prisma studio.
+
+To start the Prisma Studio dashboard on port 5555, run:
+
+```bash
+docker compose up studio
+```
+
+You can also run `docker compose up` without arguments to bring up `db`, `web`, and `studio` simultaneously. Once studio is running, open [http://localhost:5555](http://localhost:5555) to explore the database.
 
 test the python api by opening localhost:8000 with the corresponding path.
 
