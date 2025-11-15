@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { getEspooEventSuggestionsForUser } from "@/lib/services";
+import { getEspooEventSuggestionsForUser } from "@/lib/espoo";
 import {
   FeatherlessConcurrencyError,
   FeatherlessMissingApiKeyError,
@@ -33,14 +33,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const suggestions = await getEspooEventSuggestionsForUser(user.id);
+    const result = await getEspooEventSuggestionsForUser(user.id);
 
     console.info("[EspooSuggestions][API] Responding with recommendations", {
       email,
-      recommendationCount: suggestions.recommendations.length,
+      recommendationCount: result.suggestions.recommendations.length,
+      source: result.source,
     });
 
-    return NextResponse.json(suggestions, { status: 200 });
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("[EspooSuggestions][API] Error", error);
 
