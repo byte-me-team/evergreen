@@ -3,36 +3,48 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { MarketingHeader } from "@/components/layout/marketing-header";
 import {
-  BellOff,
-  CloudRain,
-  HeartCrack,
+  Compass,
+  Crown,
+  Share2,
   Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 const highlights: { title: string; body: string; icon: LucideIcon }[] = [
   {
-    title: "Personal preference co-pilot",
-    body: "Automatically normalize each person’s likes and limits so suggestions stay within their comfort zone every time.",
-    icon: BellOff,
+    title: "Initiative stays with them",
+    body: "Evergreen hands the reins back to the elder. They pick the vibe, the pace, and the guest list while we orchestrate logistics in the background.",
+    icon: Crown,
   },
   {
-    title: "Matchmaking that adapts",
-    body: "Evergreen compares interests, weather, mobility, and even schedules to produce three realistic invites you can send instantly.",
-    icon: CloudRain,
+    title: "Gentle pushes toward new joy",
+    body: "We suggest fresh activities, handle the planning, and pair them with relatives who would love to join—no overwhelm, just possibilities.",
+    icon: Compass,
   },
   {
-    title: "Contextual reminders",
-    body: "No nagging. Nudges arrive only when plans feel stale or silence stretches too long, keeping everyone looped in without guilt.",
-    icon: HeartCrack,
+    title: "Family plugged in automatically",
+    body: "Evergreen keeps kids and grandkids looped in, confirms RSVPs, and syncs calendars so everyone feels involved without constant back-and-forth.",
+    icon: Share2,
+  },
+];
+
+const partners = [
+  {
+    name: "Aalto University School of Science",
+    tagline: "Hackathon challenge providers",
+    description:
+      "Evergreen is our answer to Aalto's challenge: build tools that advance their research into elevating the everyday life of older adults as the world around them accelerates.",
+    logoLight: "/aalto_dark.png",
+    logoDark: "/aalto_white.png",
+    url: "https://www.aalto.fi/en/innovation-portfolio/ar4u",
   },
 ];
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <MarketingHeader />
-      <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-6xl flex-col gap-12 px-6 py-14 sm:py-20">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-6 py-14 sm:py-20">
         <section className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="space-y-8">
             <div className="inline-flex items-center gap-3 rounded-full border border-primary/30 px-4 py-2 text-xs font-semibold uppercase tracking-[0.5em] text-primary/80">
@@ -44,7 +56,7 @@ export default function Home() {
                 EVERGREEN
               </h1>
               <p className="text-xl font-medium text-primary/90">
-                the gentle bridge from a lonely dystopia to a shared utopia
+                The gentle bridge from a lonely dystopia to a shared utopia
               </p>
               <p className="text-base text-muted-foreground sm:text-lg">
                 A calm intervention for families drifting apart. We pair honest
@@ -96,19 +108,79 @@ export default function Home() {
           {highlights.map(({ title, body, icon: Icon }) => (
             <div
               key={title}
-              className="group rounded-2xl border border-border/70 bg-card/80 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/60 hover:shadow-xl hover:shadow-primary/20"
+              className="group flex h-full flex-col rounded-2xl border border-border/70 bg-card/80 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/60 hover:shadow-xl hover:shadow-primary/20"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex min-h-[56px] items-start gap-3">
                 <span className="rounded-full bg-primary/10 p-2 text-primary transition group-hover:scale-105 group-hover:bg-primary/20">
                   <Icon className="h-5 w-5 motion-safe:animate-[pulse_4s_ease-in-out_infinite]" />
                 </span>
-                <h3 className="text-lg font-semibold">{title}</h3>
+                <h3 className="text-lg font-semibold leading-tight">{title}</h3>
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">{body}</p>
+              <p className="mt-4 flex-1 text-base leading-relaxed text-muted-foreground">
+                {body}
+              </p>
             </div>
           ))}
         </section>
+
+        <section className="mt-6 flex flex-col items-center gap-8 rounded-3xl border border-border/70 bg-card/60 p-8 text-center shadow-lg shadow-primary/10">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-primary">
+              Our partners
+            </p>
+            <h2 className="text-3xl font-semibold">
+              Research-backed collaborators
+            </h2>
+            <p className="text-sm text-muted-foreground sm:text-base">
+              Aalto University School of Science frames our hackathon challenge,
+              and Evergreen is built to accelerate their research into
+              supporting elder wellbeing in an ever-changing world.
+            </p>
+          </div>
+          <div className="flex w-full max-w-3xl flex-col items-center gap-6">
+            {partners.map((partner) => (
+              <Link
+                key={partner.name}
+                href={partner.url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-full flex-col items-center gap-6 rounded-3xl border border-border/70 bg-card/80 p-6 transition hover:-translate-y-1 hover:border-primary/60 hover:shadow-xl hover:shadow-primary/20"
+              >
+                <div className="flex flex-col items-center gap-3">
+                  <div className="rounded-3xl border border-border/60 bg-background/90 p-4 shadow-sm">
+                    <Image
+                      src={partner.logoLight}
+                      alt={`${partner.name} logo`}
+                      width={360}
+                      height={320}
+                      className="block h-auto w-[320px] max-w-full dark:hidden"
+                    />
+                    <Image
+                      src={partner.logoDark}
+                      alt={`${partner.name} logo`}
+                      width={360}
+                      height={320}
+                      className="hidden h-auto w-[320px] max-w-full dark:block"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xl font-semibold">{partner.name}</p>
+                    <p className="text-xs uppercase tracking-[0.35em] text-primary">
+                      {partner.tagline}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-base text-muted-foreground">
+                  {partner.description}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
       </main>
+      <footer className="w-full border-t border-border/60 bg-card/70 px-6 py-4 text-center text-xs text-muted-foreground">
+        © {new Date().getFullYear()} Byte Me Team — lovingly crafted at Junction
+      </footer>
     </div>
   );
 }
