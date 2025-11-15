@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: appdb
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
     ports:
       - "5432:5432"
     volumes:
@@ -14,12 +14,29 @@ services:
   web:
     image: node:20
     working_dir: /app
-    command: sh -c "npm ci && npx prisma generate && npm run dev"
+    command: >-
+      sh -c "npm ci && npx prisma generate && npx prisma db push && npm run dev"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/appdb?schema=public
-      PORT: 3000
+      DATABASE_URL: ${DATABASE_URL_DOCKER:-postgresql://postgres:postgres@db:5432/appdb?schema=public}
+      PORT: ${PORT:-3000}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
     ports:
       - "3000:3000"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - web-node-modules:/app/node_modules
+
+  studio:
+    image: node:20
+    working_dir: /app
+    command: >-
+      sh -c "npm ci && npx prisma generate && npx prisma studio --hostname 0.0.0.0 --port ${PRISMA_STUDIO_PORT:-5555}"
+    environment:
+      DATABASE_URL: ${DATABASE_URL_DOCKER:-postgresql://postgres:postgres@db:5432/appdb?schema=public}
+    ports:
+      - "${PRISMA_STUDIO_PORT:-5555}:5555"
     depends_on:
       - db
     volumes:
