@@ -39,12 +39,17 @@ export type JointActivities = z.infer<typeof JointActivitiesSchema>;
 const EventRecommendationSchema = z.object({
   event_id: z.string(),
   title: z.string(),
-  reason: z.string(),
   confidence: z
     .number()
     .min(0)
     .max(1)
     .catch(0.5),
+  preferred_day_index: z
+    .number()
+    .int()
+    .min(0)
+    .max(6)
+    .optional(),
 });
 
 export const EventSuggestionsSchema = z.object({
@@ -277,14 +282,14 @@ Return JSON only. No backticks, no code fences, no commentary.
 }
 
 const EVENT_MATCH_SYSTEM_INSTRUCTIONS = `
-You are a cultural concierge. Given a person's structured preferences and a set of candidate events, recommend the most relevant events for the next week. Consider tags, descriptions, timing, location, and accessibility cues. Assign each recommendation a confidence score between 0 and 1 (0 = weak match, 1 = perfect match). Return JSON ONLY:
+You are a cultural concierge. Given a person's structured preferences and a set of candidate events, recommend the most relevant events for the next week. Consider tags, descriptions, timing, location, and accessibility cues. Always diversify selections across the next seven days: avoid returning more than two events on the same day when other days have viable options. Assign each recommendation a confidence score between 0 and 1 (0 = weak match, 1 = perfect match). Return JSON ONLY:
 {
   "recommendations": [
     {
       "event_id": string, // must match the provided event id
-      "title": string, // human readable title or summary
-      "reason": string, // short explanation personalized to the user
-      "confidence": number // required 0-1 confidence score
+      "title": string, // short label we can show in UI
+      "confidence": number, // required 0-1 confidence score
+      "preferred_day_index": number // optional 0-6 offset from today to nudge scheduling variety
     }
   ]
 }
@@ -304,6 +309,7 @@ export async function callFeatherlessEventSuggestions(
   });
 
   const payload = events.map((evt) => ({
+    id: evt.id,
     event_id: evt.id,
     title: evt.title,
     summary: evt.summary ?? evt.description ?? null,
@@ -324,7 +330,7 @@ ${JSON.stringify(userPrefs, null, 2)}
 Candidate events:
 ${JSON.stringify(payload, null, 2)}
 
-Always choose events from the provided list. No new events. Return JSON only, without backticks.
+Always choose events from the provided list. No new events. Spread the picks across the week (0 = today, 6 = six days out) so seniors have options throughout the week. Return JSON only, without backticks.
   `.trim();
 
   const output = await callFeatherlessRaw(fullPrompt);

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 import * as React from "react"
 
 import { SearchForm } from "@/components/search-form"
@@ -36,12 +37,13 @@ const baseSections: NavSection[] = [
     title: "Your spaces",
     items: [
       { title: "Dashboard", url: "/dashboard" },
-      { title: "Calendar (soon)", url: "#calendar", disabled: true },
+      { title: "Calendar", url: "/calendar" },
     ],
   },
   {
     title: "Suggestions",
     items: [
+      { title: "All suggestions", url: "/suggestions" },
       { title: "Activity feed", url: "#feed", disabled: true },
       { title: "Shared plans", url: "#plans", disabled: true },
     ],
@@ -116,17 +118,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarFooter className="border-t border-border/40 px-4 py-4">
-        <div className="rounded-2xl border border-border/50 bg-sidebar p-4 text-sm">
-          <p className="font-semibold text-foreground">Signed in as</p>
-          <p className="text-muted-foreground">{user?.email ?? "Guest"}</p>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Sessions are stored securely via Auth.js and Prisma.
-          </p>
+      <SidebarFooter className="border-t border-border/30 px-4 py-4">
+        <div className="rounded-2xl bg-sidebar-accent/40 p-3 text-xs text-white">
+          <p className="font-semibold">Signed in</p>
+          <p className="text-sm">{user?.email ?? "Guest"}</p>
+          <p className="mt-1 opacity-70">Data updates daily.</p>
         </div>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )
 }
-import { useSession } from "next-auth/react"

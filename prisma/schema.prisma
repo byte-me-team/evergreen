@@ -21,8 +21,9 @@ model User {
   relatives     Relative[]
   accounts      Account[]
   sessions      Session[]
+
+  matchedSuggestions MatchedSuggestion[]
   matchesAsUser Match[]          @relation("UserMatches")
-  espooSuggestionCache EspooSuggestionCache?
 }
 
 model UserPreferences {
@@ -100,15 +101,6 @@ model Match {
   createdAt DateTime @default(now())
 }
 
-model EspooSuggestionCache {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  suggestionsJson Json
-  generatedAt    DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
 model Event {
   id             String   @id @default(cuid())
   sourceId       String   @unique
@@ -128,5 +120,24 @@ model Event {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  matchedSuggestions MatchedSuggestion[]
+
   @@index([startTime])
+}
+
+model MatchedSuggestion {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  reason      String
+  confidence  Float    @default(0.5)
+  metadata    Json?
+  isGoing     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, eventId])
+  @@index([userId])
 }

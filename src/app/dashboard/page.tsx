@@ -1,98 +1,72 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  MatchedSuggestion,
+  SuggestionMeta,
+  fetchMatchedSuggestions,
+  markSuggestionAttendance,
+} from "@/lib/client/matched-suggestions";
 import { useRequireAuth } from "@/lib/use-require-auth";
+import { formatConfidence, formatEventDate } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
 
-type EventRecommendation = {
-  event_id: string;
-  title: string;
-  reason: string;
-  confidence: number;
-  event: {
-    title: string;
-    summary: string | null;
-    startTime: string;
-    endTime: string | null;
-    location: string | null;
-    price: string | null;
-    sourceUrl: string | null;
-  };
-};
 
-type SuggestionMeta = {
-  source: "cache" | "fresh" | "fallback";
-  retryAfterMs?: number;
-};
-
-async function fetchEspooSuggestions(
-  email: string
-): Promise<{ recommendations: EventRecommendation[]; meta: SuggestionMeta }> {
-  const response = await fetch("/api/espoo-suggestions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email }),
-  });
-
-  if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as
-      | { error?: string }
-      | null;
-    throw new Error(payload?.error ?? "Failed to load suggestions");
-  }
-
-  const json = (await response.json()) as {
-    suggestions: { recommendations: EventRecommendation[] };
-    source: SuggestionMeta["source"];
-    retryAfterMs?: number;
-  };
-
-  return {
-    recommendations: [...json.suggestions.recommendations].sort(
-      (a, b) => b.confidence - a.confidence
-    ),
-    meta: {
-      source: json.source,
-      retryAfterMs: json.retryAfterMs,
-    },
-  };
-}
-
-const formatDate = (input: string) => {
-  const date = new Date(input);
-  if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-};
-
-const formatConfidence = (value: number) => {
-  if (!Number.isFinite(value)) return "--";
-  return `${Math.round(Math.max(0, Math.min(1, value)) * 100)}% match`;
-};
+const DASHBOARD_VISIBLE_COUNT = 3;
+const AUTO_REFRESH_DELAY_MS = 8000;
 
 export default function DashboardPage() {
   const { user, isLoading } = useRequireAuth();
-  const [eventSuggestions, setEventSuggestions] = useState<EventRecommendation[]>([]);
+  const [eventSuggestions, setEventSuggestions] = useState<MatchedSuggestion[]>([]);
+  const [meta, setMeta] = useState<SuggestionMeta | null>(null);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [hasCompletedSuggestionsFetch, setHasCompletedSuggestionsFetch] = useState(false);
   const lastFetchKeyRef = useRef<string | null>(null);
-  const fallbackRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [refreshNonce, setRefreshNonce] = useState(0);
+  const [fetchReady, setFetchReady] = useState(false);
+  const [actioningId, setActioningId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.email) {
+      setFetchReady(false);
       lastFetchKeyRef.current = null;
       setIsLoadingSuggestions(false);
       setHasCompletedSuggestionsFetch(false);
+      setEventSuggestions([]);
+      setMeta(null);
+      setSuggestionError(null);
+      setRefreshNonce(0);
+      return;
+    }
+
+    setFetchReady(true);
+    setRefreshNonce((value) => value + 1);
+  }, [user?.email]);
+
+  const handleToggleGoing = useCallback(
+    async (suggestion: MatchedSuggestion) => {
+      try {
+        setActioningId(suggestion.id);
+        await markSuggestionAttendance(suggestion.id, !suggestion.isGoing);
+        setRefreshNonce((value) => value + 1);
+      } catch (error) {
+        setSuggestionError(
+          error instanceof Error
+            ? error.message
+            : "Failed to update selection."
+        );
+      } finally {
+        setActioningId(null);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!fetchReady || !user?.email) {
       return;
     }
 
@@ -106,23 +80,24 @@ export default function DashboardPage() {
     lastFetchKeyRef.current = fetchKey;
     setHasCompletedSuggestionsFetch(false);
 
-    if (fallbackRetryTimeoutRef.current) {
-      clearTimeout(fallbackRetryTimeoutRef.current);
-      fallbackRetryTimeoutRef.current = null;
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = null;
     }
 
     let cancelled = false;
     let completed = false;
     setIsLoadingSuggestions(true);
     setSuggestionError(null);
-    fetchEspooSuggestions(user.email)
+    fetchMatchedSuggestions(user.email)
       .then(({ recommendations, meta }) => {
         if (cancelled) return;
-        setEventSuggestions(recommendations.slice(0, 3));
-        if (meta.source === "fallback" && meta.retryAfterMs) {
-          fallbackRetryTimeoutRef.current = setTimeout(() => {
+        setEventSuggestions(recommendations.slice(0, DASHBOARD_VISIBLE_COUNT));
+        setMeta(meta);
+        if ((meta.status === "running" || meta.missing > 0) && !cancelled) {
+          refreshTimeoutRef.current = setTimeout(() => {
             setRefreshNonce((value) => value + 1);
-          }, meta.retryAfterMs);
+          }, AUTO_REFRESH_DELAY_MS);
         }
       })
       .catch((error) => {
@@ -142,15 +117,15 @@ export default function DashboardPage() {
 
     return () => {
       cancelled = true;
-      if (fallbackRetryTimeoutRef.current) {
-        clearTimeout(fallbackRetryTimeoutRef.current);
-        fallbackRetryTimeoutRef.current = null;
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+        refreshTimeoutRef.current = null;
       }
       if (!completed && lastFetchKeyRef.current === fetchKey) {
         lastFetchKeyRef.current = null;
       }
     };
-  }, [user?.email, refreshNonce]);
+  }, [fetchReady, user?.email, refreshNonce]);
 
   if (isLoading) {
     return (
@@ -173,9 +148,13 @@ export default function DashboardPage() {
           </p>
           <h1 className="text-3xl font-semibold">Your upcoming suggestions</h1>
           <p className="text-base text-muted-foreground">
-            Hand-picked events happening around Espoo based on your onboarding
-            profile.
+            Hand-picked events happening around Espoo based on your onboarding profile.
           </p>
+          {meta?.status === "running" && (
+            <p className="text-sm text-muted-foreground">
+              Refreshing your matches in the background. This list updates automatically.
+            </p>
+          )}
         </div>
         <div className="grid gap-4">
           {isLoadingSuggestions &&
@@ -216,10 +195,16 @@ export default function DashboardPage() {
               </article>
             )}
 
-          {eventSuggestions.map((suggestion) => (
+          {eventSuggestions.map((suggestion) => {
+            const cardClass = `rounded-2xl border p-5 shadow-sm ${
+              suggestion.isGoing
+                ? "border-primary bg-primary/10"
+                : "border-border bg-card/70"
+            }`;
+            return (
             <article
-              key={suggestion.event_id}
-              className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm"
+              key={suggestion.id}
+              className={cardClass}
             >
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -227,46 +212,66 @@ export default function DashboardPage() {
                     {suggestion.event.title}
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    {formatDate(suggestion.event.startTime)}
+                    {formatEventDate(suggestion.event.startTime)}
                     {suggestion.event.location
                       ? ` • ${suggestion.event.location}`
                       : ""}
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-2 text-right">
-                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Confidence
+                  <div>
+                    <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Confidence
+                    </div>
+                    <div className="text-sm font-semibold text-primary">
+                      {formatConfidence(suggestion.confidence)}
+                    </div>
                   </div>
-                  <div className="text-sm font-semibold text-primary">
-                    {formatConfidence(suggestion.confidence)}
-                  </div>
-                  {suggestion.event.sourceUrl ? (
-                    <Button asChild size="sm" variant="outline">
-                      <a
-                        href={suggestion.event.sourceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <Button
+                      size="sm"
+                      variant={suggestion.isGoing ? "default" : "outline"}
+                      onClick={() => handleToggleGoing(suggestion)}
+                      disabled={actioningId === suggestion.id}
+                    >
+                      {suggestion.isGoing ? "Going" : "I'm going"}
+                    </Button>
+                    {suggestion.event.sourceUrl ? (
+                      <Button asChild size="sm" variant="outline">
+                        <a
+                          href={suggestion.event.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Details
+                        </a>
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="outline" disabled>
                         Details
-                      </a>
-                    </Button>
-                  ) : (
-                    <Button size="sm" variant="outline" disabled>
-                      Details
-                    </Button>
-                  )}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
-              <p className="mt-3 text-base text-muted-foreground">
-                {suggestion.reason}
-              </p>
               {suggestion.event.price && (
                 <p className="mt-2 text-xs text-muted-foreground">
                   Price: {suggestion.event.price}
                 </p>
               )}
+              {suggestion.isGoing && (
+                <p className="mt-2 text-xs italic text-muted-foreground">
+                  Invite a relative to join this outing (coming soon).
+                </p>
+              )}
             </article>
-          ))}
+          )})}
+
+          <div className="pt-2">
+            <Button asChild variant="secondary">
+              <Link href="/suggestions">See more suggestions</Link>
+            </Button>
+          </div>
         </div>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
