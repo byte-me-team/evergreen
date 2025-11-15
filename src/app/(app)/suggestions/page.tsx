@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { logActivityHistory } from "@/lib/log-activity-history";
+import { ScheduleActivityDialog } from "@/components/schedule-activity-dialog";
 
 const LOADING_STAGES = [
   "Fetching data",
@@ -436,17 +437,20 @@ function GeneralSuggestionLab({
                     >
                       Let&apos;s go!
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() =>
-                        setStatusNotice(
-                          `Scheduled “${suggestion.title}” for tomorrow.`
-                        )
+                    <ScheduleActivityDialog
+                      triggerLabel="Schedule"
+                      defaultTitle={suggestion.title}
+                      defaultDescription={suggestion.summary}
+                      relatives={relatives}
+                      source="suggestion"
+                      sourceId={suggestion.id}
+                      triggerVariant="outline"
+                      triggerSize="default"
+                      triggerClassName="flex-1"
+                      onScheduled={() =>
+                        setStatusNotice(`Scheduled “${suggestion.title}” in your calendar.`)
                       }
-                    >
-                      Schedule for tomorrow
-                    </Button>
+                    />
                   </div>
                 </CardFooter>
               </Card>
@@ -551,21 +555,8 @@ function GeneralSuggestionLab({
             </div>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button
-                className="flex-1 min-w-[150px]"
-                onClick={handleSendInvites}
-              >
+              <Button className="flex-1 min-w-[150px]" onClick={handleSendInvites}>
                 Send invite
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1 min-w-[150px]"
-                onClick={() => {
-                  setStatusNotice("Saved your invite for later.");
-                  closeModal();
-                }}
-              >
-                Save for later
               </Button>
               <Button
                 variant="ghost"
@@ -786,27 +777,41 @@ function RealEventsLab({
                 </p>
               </CardContent>
               <CardFooter className="mt-auto w-full flex-col items-start gap-3">
-              <div className="flex w-full flex-wrap gap-2">
-                <Button className="flex-1" onClick={() => handleCustomize(event)}>
-                  Let&apos;s go!
-                </Button>
-              </div>
-              {event.infoUrl ? (
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full flex items-center justify-center gap-2"
-                >
-                  <a
-                    href={event.infoUrl}
-                    target="_blank"
-                    rel="noreferrer"
+                <div className="flex w-full flex-wrap gap-2">
+                  <Button className="flex-1" onClick={() => handleCustomize(event)}>
+                    Let&apos;s go!
+                  </Button>
+                  <ScheduleActivityDialog
+                    triggerLabel="Schedule"
+                    defaultTitle={event.title}
+                    defaultDescription={event.description || undefined}
+                    relatives={relatives}
+                    source="real_event"
+                    sourceId={event.id}
+                    triggerVariant="outline"
+                    triggerSize="default"
+                    triggerClassName="flex-1"
+                    onScheduled={() =>
+                      setStatusNotice(`Scheduled “${event.title}” in your calendar.`)
+                    }
+                  />
+                </div>
+                {event.infoUrl ? (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2"
                   >
-                    View details
-                    <span aria-hidden className="text-base">↗</span>
-                  </a>
-                </Button>
-              ) : null}
+                    <a
+                      href={event.infoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View details
+                      <span aria-hidden className="text-base">↗</span>
+                    </a>
+                  </Button>
+                ) : null}
               </CardFooter>
             </Card>
           ))}
@@ -897,21 +902,8 @@ function RealEventsLab({
             </div>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button
-                className="flex-1 min-w-[150px]"
-                onClick={handleSendInvites}
-              >
+              <Button className="flex-1 min-w-[150px]" onClick={handleSendInvites}>
                 Send invite
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1 min-w-[150px]"
-                onClick={() => {
-                  setStatusNotice("Saved your invite for later.");
-                  closeModal();
-                }}
-              >
-                Save for later
               </Button>
               <Button
                 variant="ghost"

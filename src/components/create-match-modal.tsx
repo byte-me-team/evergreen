@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, PencilLine, XCircle } from "lucide-react";
 import { logActivityHistory } from "@/lib/log-activity-history";
+import { ScheduleActivityDialog } from "@/components/schedule-activity-dialog";
 
 type ActivitySuggestion = {
   title: string;
@@ -104,11 +105,6 @@ export default function CreateMatchModal({
       metadata: { relativeId },
     });
     setStatusNotice(`Invite queued for “${name}”.`);
-    setIsCustomizeOpen(false);
-  }
-
-  function handleSaveLater() {
-    setStatusNotice("Saved this invite for later.");
     setIsCustomizeOpen(false);
   }
 
@@ -320,17 +316,21 @@ export default function CreateMatchModal({
                         <Button className="w-full" onClick={() => handleCustomize(index)}>
                           Let&apos;s go!
                         </Button>
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          onClick={() =>
-                            setStatusNotice(
-                              `Scheduled “${activity.title}” for tomorrow.`
-                            )
+                        <ScheduleActivityDialog
+                          triggerLabel="Schedule"
+                          defaultTitle={activity.title}
+                          defaultDescription={activity.description}
+                          defaultPartner={relativeName}
+                          relatives={[{ id: relativeId, name: relativeName }]}
+                          source="relative"
+                          sourceId={activity.title}
+                          triggerVariant="outline"
+                          triggerSize="default"
+                          triggerClassName="w-full"
+                          onScheduled={() =>
+                            setStatusNotice(`Scheduled “${activity.title}” in your calendar.`)
                           }
-                        >
-                          Schedule for tomorrow
-                        </Button>
+                        />
                       </CardFooter>
                     </Card>
                   );
@@ -398,13 +398,6 @@ export default function CreateMatchModal({
             <div className="mt-6 flex flex-wrap gap-3">
               <Button className="flex-1 min-w-[150px]" onClick={handleSendInvite}>
                 Send invite
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1 min-w-[150px]"
-                onClick={handleSaveLater}
-              >
-                Save for later
               </Button>
               <Button
                 variant="ghost"
