@@ -54,16 +54,14 @@ export default function Home() {
                 EverGreen
               </h1>
               <p className="text-xl font-medium text-primary/90">
-                The gentle bridge from a lonely dystopia to a shared utopia
+                There's no age limit for Utopia
               </p>
               <p className="text-base text-muted-foreground sm:text-lg">
-                A calm intervention for families drifting apart. We pair honest
-                data with respectful AI nudges so no one has to be the nagging
-                relative or the forgotten grandparent.
+                A subtle support for seniors wanting to reconnect their loved ones. We pair honest
+                data with respectful AI nudges so being connected is as easy as it can be.
               </p>
               <p className="text-sm text-muted-foreground/80">
-                Built at Junction 2025. Designed to plug directly into production
-                APIs once the hackathon dust settles.
+                Built at Junction 2025.
               </p>
             </div>
             <div className="flex flex-col gap-4 sm:flex-row">
