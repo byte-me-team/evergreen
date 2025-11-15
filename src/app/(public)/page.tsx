@@ -54,11 +54,11 @@ export default function Home() {
                 EverGreen
               </h1>
               <p className="text-xl font-medium text-primary/90">
-                There's no age limit for Utopia
+                Utopia has no age limit
               </p>
               <p className="text-base text-muted-foreground sm:text-lg">
                 A subtle support for seniors wanting to reconnect their loved ones. We pair honest
-                data with respectful AI nudges so being connected is as easy as it can be.
+                data with safe AI match-making so being connected is as easy as it can be.
               </p>
               <p className="text-sm text-muted-foreground/80">
                 Built at Junction 2025.
