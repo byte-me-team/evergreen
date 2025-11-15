@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { Button } from "@/components/ui/button";
 
@@ -21,9 +21,14 @@ type EventRecommendation = {
   };
 };
 
+type SuggestionMeta = {
+  source: "cache" | "fresh" | "fallback";
+  retryAfterMs?: number;
+};
+
 async function fetchEspooSuggestions(
   email: string
-): Promise<EventRecommendation[]> {
+): Promise<{ recommendations: EventRecommendation[]; meta: SuggestionMeta }> {
   const response = await fetch("/api/espoo-suggestions", {
     method: "POST",
     headers: {
@@ -40,12 +45,20 @@ async function fetchEspooSuggestions(
   }
 
   const json = (await response.json()) as {
-    recommendations: EventRecommendation[];
+    suggestions: { recommendations: EventRecommendation[] };
+    source: SuggestionMeta["source"];
+    retryAfterMs?: number;
   };
 
-  return [...json.recommendations].sort(
-    (a, b) => b.confidence - a.confidence
-  );
+  return {
+    recommendations: [...json.suggestions.recommendations].sort(
+      (a, b) => b.confidence - a.confidence
+    ),
+    meta: {
+      source: json.source,
+      retryAfterMs: json.retryAfterMs,
+    },
+  };
 }
 
 const formatDate = (input: string) => {
@@ -70,17 +83,47 @@ export default function DashboardPage() {
   const [eventSuggestions, setEventSuggestions] = useState<EventRecommendation[]>([]);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [hasCompletedSuggestionsFetch, setHasCompletedSuggestionsFetch] = useState(false);
+  const lastFetchKeyRef = useRef<string | null>(null);
+  const fallbackRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [refreshNonce, setRefreshNonce] = useState(0);
 
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      lastFetchKeyRef.current = null;
+      setIsLoadingSuggestions(false);
+      setHasCompletedSuggestionsFetch(false);
+      return;
+    }
+
+    const fetchKey = `${user.email}:${refreshNonce}`;
+    if (lastFetchKeyRef.current === fetchKey) {
+      setIsLoadingSuggestions(false);
+      setHasCompletedSuggestionsFetch(true);
+      return;
+    }
+
+    lastFetchKeyRef.current = fetchKey;
+    setHasCompletedSuggestionsFetch(false);
+
+    if (fallbackRetryTimeoutRef.current) {
+      clearTimeout(fallbackRetryTimeoutRef.current);
+      fallbackRetryTimeoutRef.current = null;
+    }
 
     let cancelled = false;
+    let completed = false;
     setIsLoadingSuggestions(true);
     setSuggestionError(null);
     fetchEspooSuggestions(user.email)
-      .then((data) => {
+      .then(({ recommendations, meta }) => {
         if (cancelled) return;
-        setEventSuggestions(data.slice(0, 3));
+        setEventSuggestions(recommendations.slice(0, 3));
+        if (meta.source === "fallback" && meta.retryAfterMs) {
+          fallbackRetryTimeoutRef.current = setTimeout(() => {
+            setRefreshNonce((value) => value + 1);
+          }, meta.retryAfterMs);
+        }
       })
       .catch((error) => {
         if (cancelled) return;
@@ -93,12 +136,21 @@ export default function DashboardPage() {
       .finally(() => {
         if (cancelled) return;
         setIsLoadingSuggestions(false);
+        setHasCompletedSuggestionsFetch(true);
+        completed = true;
       });
 
     return () => {
       cancelled = true;
+      if (fallbackRetryTimeoutRef.current) {
+        clearTimeout(fallbackRetryTimeoutRef.current);
+        fallbackRetryTimeoutRef.current = null;
+      }
+      if (!completed && lastFetchKeyRef.current === fetchKey) {
+        lastFetchKeyRef.current = null;
+      }
     };
-  }, [user?.email]);
+  }, [user?.email, refreshNonce]);
 
   if (isLoading) {
     return (
@@ -154,6 +206,7 @@ export default function DashboardPage() {
 
           {!isLoadingSuggestions &&
             !suggestionError &&
+            hasCompletedSuggestionsFetch &&
             eventSuggestions.length === 0 && (
               <article className="rounded-2xl border border-dashed border-border/60 bg-card/50 p-5 shadow-sm">
                 <p className="text-sm text-muted-foreground">
