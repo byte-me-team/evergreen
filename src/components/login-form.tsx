@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input"
 
 type LoginFormProps = {
   className?: string
+  cardClassName?: string
   email: string
   password: string
   emailError?: string | null
@@ -37,6 +38,7 @@ type LoginFormProps = {
 
 export function LoginForm({
   className,
+  cardClassName,
   email,
   password,
   emailError,
@@ -52,7 +54,12 @@ export function LoginForm({
 }: LoginFormProps) {
   return (
     <div className={cn("flex flex-col gap-6", className)}>
-      <Card>
+      <Card
+        className={cn(
+          "rounded-[32px] border border-border/70 bg-card/80 shadow-2xl shadow-primary/10 backdrop-blur",
+          cardClassName
+        )}
+      >
         <CardHeader>
           <CardTitle>Sign in to continue</CardTitle>
           <CardDescription>

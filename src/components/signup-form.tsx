@@ -66,7 +66,9 @@ export function SignupForm({
   onConfirmPasswordChange,
   onSubmit,
 }: SignupFormProps) {
+  const defaultCity = "Aalto"
   const cityOptions = [
+    defaultCity,
     "Helsinki",
     "Espoo",
     "Vantaa",
@@ -76,7 +78,8 @@ export function SignupForm({
     "Jyväskylä",
     "Kuopio",
     "Lahti",
-  ];
+  ]
+  const normalizedCity = city || defaultCity
 
   return (
     <Card className={className}>
@@ -125,12 +128,11 @@ export function SignupForm({
               <FieldLabel htmlFor="onboarding-city">City *</FieldLabel>
               <select
                 id="onboarding-city"
-                className="w-full rounded-xl border border-border bg-card p-3 text-base"
-                value={city}
+                className="border-input bg-transparent h-9 w-full min-w-0 rounded-md border px-3 text-base shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                value={normalizedCity}
                 onChange={(event) => onCityChange(event.target.value)}
                 required
               >
-                <option value="">Select a city</option>
                 {cityOptions.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -146,48 +148,50 @@ export function SignupForm({
                 {cityError ?? "We'll use this to personalize nearby activities."}
               </FieldDescription>
             </Field>
-            <Field>
-              <FieldLabel htmlFor="onboarding-password">Password *</FieldLabel>
-              <Input
-                id="onboarding-password"
-                type="password"
-                placeholder="Create a password"
-                value={password}
-                onChange={(event) => onPasswordChange(event.target.value)}
-                required
-              />
-              <FieldDescription
-                className={cn(
-                  "text-muted-foreground",
-                  passwordError && "text-destructive"
-                )}
-              >
-                {passwordError ?? "Minimum 8 characters."}
-              </FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="onboarding-confirm-password">
-                Confirm password
-              </FieldLabel>
-              <Input
-                id="onboarding-confirm-password"
-                type="password"
-                placeholder="Re-enter password"
-                value={confirmPassword}
-                onChange={(event) =>
-                  onConfirmPasswordChange(event.target.value)
-                }
-                required
-              />
-              <FieldDescription
-                className={cn(
-                  "text-muted-foreground",
-                  confirmPasswordError && "text-destructive"
-                )}
-              >
-                {confirmPasswordError ?? "Helps avoid typos."}
-              </FieldDescription>
-            </Field>
+            <div className="grid gap-6 sm:grid-cols-2">
+              <Field>
+                <FieldLabel htmlFor="onboarding-password">Password *</FieldLabel>
+                <Input
+                  id="onboarding-password"
+                  type="password"
+                  placeholder="Create a password"
+                  value={password}
+                  onChange={(event) => onPasswordChange(event.target.value)}
+                  required
+                />
+                <FieldDescription
+                  className={cn(
+                    "text-muted-foreground",
+                    passwordError && "text-destructive"
+                  )}
+                >
+                  {passwordError ?? "Minimum 8 characters."}
+                </FieldDescription>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="onboarding-confirm-password">
+                  Confirm password
+                </FieldLabel>
+                <Input
+                  id="onboarding-confirm-password"
+                  type="password"
+                  placeholder="Re-enter password"
+                  value={confirmPassword}
+                  onChange={(event) =>
+                    onConfirmPasswordChange(event.target.value)
+                  }
+                  required
+                />
+                <FieldDescription
+                  className={cn(
+                    "text-muted-foreground",
+                    confirmPasswordError && "text-destructive"
+                  )}
+                >
+                  {confirmPasswordError ?? "Helps avoid typos."}
+                </FieldDescription>
+              </Field>
+            </div>
             <Field>
               {formError && (
                 <p className="mb-2 text-sm font-medium text-destructive">

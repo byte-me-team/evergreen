@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { Sparkles } from "lucide-react";
 
 import { SignupForm } from "@/components/signup-form";
 import { useOnboarding } from "@/components/onboarding/onboarding-provider";
@@ -61,19 +62,23 @@ export default function OnboardingBasicPage() {
   };
 
   return (
-    <main>
-      <section className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-6 space-y-2">
-          <p className="text-sm font-medium uppercase tracking-[0.3em] text-primary">
+    <main className="relative z-10">
+      <section className="space-y-8 rounded-[40px] border border-primary/25 bg-card/70 px-5 py-8 shadow-2xl shadow-primary/20 backdrop-blur sm:px-8">
+        <div className="space-y-3">
+          <div className="inline-flex items-center gap-3 rounded-full border border-primary/40 bg-primary/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-primary">
+            <Sparkles className="h-4 w-4 text-primary motion-safe:animate-[pulse_4s_ease-in-out_infinite]" />
             Step 1 of 3
-          </p>
-          <h1 className="text-3xl font-semibold">Tell us the basics</h1>
-          <p className="text-base text-muted-foreground">
-            We use your email and password to create a secure account when you
-            finish onboarding.
+          </div>
+          <h1 className="text-3xl font-semibold sm:text-4xl">
+            Tell us the basics
+          </h1>
+          <p className="text-base text-muted-foreground sm:text-lg">
+            We use your email, location, and password to anchor your secure
+            account before we craft the more emotive bits.
           </p>
         </div>
         <SignupForm
+          className="rounded-[32px] border border-border/70 bg-card/80 shadow-xl shadow-primary/10 backdrop-blur"
           name={state.basicInfo.name}
           email={state.basicInfo.email}
           city={state.basicInfo.city}

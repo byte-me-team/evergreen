@@ -27,7 +27,7 @@ export const createEmptyOnboardingState = (): OnboardingState => ({
     name: "",
     email: "",
     password: "",
-    city: "",
+    city: "Aalto",
   },
   preferences: {
     enjoyList: [],

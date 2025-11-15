@@ -7,12 +7,15 @@ import {
   useState,
 } from "react";
 
+import { Badge } from "@/components/ui/badge";
+
 type TagInputProps = {
   label: string;
   items: string[];
   onChange: (next: string[]) => void;
   placeholder?: string;
-  description?: string;
+  description?: string | null;
+  tone?: "default" | "destructive";
 };
 
 export type TagInputHandle = {
@@ -20,7 +23,7 @@ export type TagInputHandle = {
 };
 
 export const TagInput = forwardRef<TagInputHandle, TagInputProps>(
-  ({ label, items, onChange, placeholder, description }, ref) => {
+  ({ label, items, onChange, placeholder, description, tone = "default" }, ref) => {
     const [value, setValue] = useState("");
 
     const handleSubmit = () => {
@@ -68,26 +71,24 @@ export const TagInput = forwardRef<TagInputHandle, TagInputProps>(
         {items.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {items.map((item) => (
-              <span
+              <Badge
                 key={item}
-                className="group inline-flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1 text-sm text-primary"
+                variant={tone === "destructive" ? "destructive" : "secondary"}
+                className="gap-2 px-3 py-1 text-sm"
               >
                 {item}
                 <button
                   type="button"
                   aria-label={`Remove ${item}`}
                   onClick={() => removeItem(item)}
-                  className="text-xs text-primary/70 transition hover:text-primary"
+                  className="text-xs opacity-60 transition hover:opacity-100"
                 >
                   ×
                 </button>
-              </span>
+              </Badge>
             ))}
           </div>
         ) : null}
-        <p className="text-xs text-muted-foreground">
-          Press Enter to turn what you typed into a bubble.
-        </p>
       </div>
     );
   }

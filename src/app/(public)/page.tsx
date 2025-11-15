@@ -42,8 +42,6 @@ const partners = [
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <MarketingHeader />
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-6 py-14 sm:py-20">
         <section className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="space-y-8">
@@ -178,9 +176,5 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <footer className="w-full border-t border-border/60 bg-card/70 px-6 py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Byte Me Team — lovingly crafted at Junction
-      </footer>
-    </div>
   );
 }
