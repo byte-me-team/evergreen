@@ -91,16 +91,18 @@ async function callFeatherlessRaw(prompt: string): Promise<string> {
   const text = await res.text().catch(() => "");
 
   if (!res.ok) {
+    let parsed: any;
     try {
-      const json = JSON.parse(text);
-      const code = json?.error?.code;
-      const message = json?.error?.message ?? text;
-
-      if (code === "concurrency_limit_exceeded") {
-        throw new FeatherlessConcurrencyError(message);
-      }
+      parsed = JSON.parse(text);
     } catch {
-      // ignore JSON parse error, fall through to generic error
+      parsed = null;
+    }
+
+    const code = parsed?.error?.code;
+    const message = parsed?.error?.message ?? text;
+
+    if (code === "concurrency_limit_exceeded") {
+      throw new FeatherlessConcurrencyError(message);
     }
 
     throw new Error(
