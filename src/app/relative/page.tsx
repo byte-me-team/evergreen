@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -12,7 +13,8 @@ import { Button } from "@/components/ui/button";
 type Relative = {
   id: string;
   name: string;
-  rawText: string;
+  preferences: string[];
+  dislikes: string[];
 };
 
 export default function RelativesPage() {
@@ -96,8 +98,22 @@ export default function RelativesPage() {
                         <div>
                         <h2 className="text-xl font-semibold">{decodeURIComponent(relative.name)}</h2>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Preferences: {relative.rawText || "None"}
-                        </p>
+                        Preferences:{" "}
+                        {relative.preferences?.length
+                          ? relative.preferences.map(x => {
+                            return <Badge className="mx-2"> {x} </Badge>
+                          })
+                          : "None"}
+                      </p>
+
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Dislikes:{" "}
+                        {relative.dislikes?.length
+                          ? relative.dislikes.map(x => {
+                            return <Badge className="mx-2" variant="destructive"> {x} </Badge>
+                          })
+                          : "None"}
+                      </p>
                         </div>
                         <Button asChild size="sm" variant="outline">
                         <Link href={`/activity/${user.id}/${relative.name}`}>

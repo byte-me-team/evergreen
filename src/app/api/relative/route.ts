@@ -3,22 +3,21 @@ import {prisma} from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { userId, name, rawText } = await req.json();
+    const { userId, name, preferences, dislikes } = await req.json();
 
-    if (!userId || !rawText || !name) {
+    if (!userId || !name) {
       return NextResponse.json(
-        { error: "Missing userId or rawText or name" },
+        { error: "Missing userId or name" },
         { status: 400 }
       );
     }
-
-    const normalizedJson = { rawText };
 
     const prefs = await prisma.relative.create({
       data: {
         userId,
         name,
-        rawText
+        preferences,
+        dislikes
       },
     });
 

@@ -42,9 +42,10 @@ model Relative {
   id                String @id @default(cuid())
   userId            String
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String 
 
-  name              String 
-  rawText           String
+  preferences       String[]
+  dislikes          String[]
   matchesAsUser Match[]          @relation("RelativeMatches")
 }
 
