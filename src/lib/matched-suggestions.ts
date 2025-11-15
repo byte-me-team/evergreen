@@ -20,6 +20,15 @@ const EVENT_POOL_LIMIT = Math.max(
   Number(process.env.MATCHED_SUGGESTION_EVENT_LIMIT ?? "200")
 );
 
+const EVENT_LOOKAHEAD_DAYS = Math.max(
+  1,
+  Number(process.env.MATCHED_SUGGESTION_LOOKAHEAD_DAYS ?? "7")
+);
+const MAX_EVENTS_PER_DAY = Math.max(
+  1,
+  Number(process.env.MATCHED_SUGGESTION_MAX_PER_DAY ?? "3")
+);
+
 const suggestionJobs = new Map<string, Promise<void>>();
 const suggestionRefreshTimestamps = new Map<string, number>();
 
@@ -31,10 +40,10 @@ type MatchedSuggestionWithEvent = Prisma.MatchedSuggestionGetPayload<{
 
 export type MatchedSuggestionView = {
   id: string;
-  reason: string;
   confidence: number;
   createdAt: string;
   eventId: string;
+  isGoing: boolean;
   event: {
     id: string;
     title: string;
@@ -86,6 +95,7 @@ export async function listMatchedSuggestions(
     where: { userId },
     include: { event: true },
     orderBy: [
+      { isGoing: "desc" },
       { confidence: "desc" },
       { updatedAt: "desc" },
     ],
@@ -97,10 +107,10 @@ export async function listMatchedSuggestions(
       if (!row?.event) return null;
       return {
         id: row.id,
-        reason: row.reason,
         confidence: clampConfidence(row.confidence),
         createdAt: row.updatedAt.toISOString(),
         eventId: row.eventId,
+        isGoing: row.isGoing,
         event: {
           id: row.event.id,
           title: row.event.title,
@@ -155,9 +165,25 @@ async function generateSuggestions(userId: string) {
   const preferences = prefsRecord.normalizedJson as NormalizedPreferences;
   const existing = await prisma.matchedSuggestion.findMany({
     where: { userId },
-    select: { eventId: true },
+    select: {
+      eventId: true,
+      event: {
+        select: {
+          startTime: true,
+        },
+      },
+    },
   });
   const existingIds = new Set(existing.map((row) => row.eventId));
+  const existingDayCounts = new Map<string, number>();
+  for (const row of existing) {
+    const dayKey = row.event?.startTime
+      ? row.event.startTime.toISOString().slice(0, 10)
+      : null;
+    if (!dayKey) continue;
+    existingDayCounts.set(dayKey, (existingDayCounts.get(dayKey) ?? 0) + 1);
+  }
+  const dayCounts = new Map(existingDayCounts);
   const missing = Math.max(0, MATCH_TARGET - existing.length);
 
   if (missing === 0) {
@@ -165,9 +191,15 @@ async function generateSuggestions(userId: string) {
   }
 
   const now = new Date();
+  const end = new Date(
+    now.getTime() + EVENT_LOOKAHEAD_DAYS * 24 * 60 * 60 * 1000
+  );
   const candidates = await prisma.event.findMany({
     where: {
-      startTime: { gte: now },
+      startTime: {
+        gte: now,
+        lt: end,
+      },
     },
     orderBy: { startTime: "asc" },
     take: EVENT_POOL_LIMIT,
@@ -210,18 +242,22 @@ async function generateSuggestions(userId: string) {
       if (inserted >= missing) break;
       const event = candidateById.get(rec.event_id);
       if (!event || existingIds.has(event.id)) continue;
+      const dayKey = event.startTime.toISOString().slice(0, 10);
+      const currentDayCount = dayCounts.get(dayKey) ?? 0;
+      if (currentDayCount >= MAX_EVENTS_PER_DAY) continue;
 
       const created = await createSuggestionRecord(
         userId,
         event.id,
-        rec.reason,
         rec.confidence,
         {
           title: rec.title,
-        }
+        },
+        event.summary ?? event.description ?? event.title
       );
 
       if (created) {
+        dayCounts.set(dayKey, currentDayCount + 1);
         existingIds.add(event.id);
         inserted += 1;
       }
@@ -286,16 +322,16 @@ async function buildRecommendations(
 async function createSuggestionRecord(
   userId: string,
   eventId: string,
-  reason: string,
   rawConfidence: number,
-  metadata: Prisma.InputJsonValue
+  metadata: Prisma.InputJsonValue,
+  fallbackDescription?: string
 ) {
   try {
     await prisma.matchedSuggestion.create({
       data: {
         userId,
         eventId,
-        reason,
+        reason: fallbackDescription ?? "",
         confidence: clampConfidence(rawConfidence),
         metadata,
       },

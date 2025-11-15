@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   MatchedSuggestion,
   SuggestionMeta,
   fetchMatchedSuggestions,
+  markSuggestionAttendance,
 } from "@/lib/client/matched-suggestions";
 import { formatConfidence, formatEventDate } from "@/lib/formatters";
 import { useRequireAuth } from "@/lib/use-require-auth";
@@ -22,6 +23,7 @@ export default function SuggestionsPage() {
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [refreshNonce, setRefreshNonce] = useState(0);
   const [fetchReady, setFetchReady] = useState(false);
+  const [actioningId, setActioningId] = useState<string | null>(null);
   const lastFetchKeyRef = useRef<string | null>(null);
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hasCompletedFetch, setHasCompletedFetch] = useState(false);
@@ -42,6 +44,25 @@ export default function SuggestionsPage() {
     setFetchReady(true);
     setRefreshNonce((value) => value + 1);
   }, [user?.email]);
+
+  const handleToggleGoing = useCallback(
+    async (suggestion: MatchedSuggestion) => {
+      try {
+        setActioningId(suggestion.id);
+        await markSuggestionAttendance(suggestion.id, !suggestion.isGoing);
+        setRefreshNonce((value) => value + 1);
+      } catch (toggleError) {
+        setError(
+          toggleError instanceof Error
+            ? toggleError.message
+            : "Failed to update selection."
+        );
+      } finally {
+        setActioningId(null);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (!fetchReady || !user?.email) {
@@ -184,10 +205,16 @@ export default function SuggestionsPage() {
 
         {!showInitialSkeletons && !error && hasCompletedFetch && (
           <div className="grid gap-4">
-            {suggestions.map((suggestion) => (
+            {suggestions.map((suggestion) => {
+              const cardClass = `rounded-2xl border p-5 shadow-sm ${
+                suggestion.isGoing
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card/70"
+              }`;
+              return (
               <article
                 key={suggestion.id}
-                className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm"
+                className={cardClass}
               >
                 <div className="flex items-center justify-between gap-4">
                   <div>
@@ -208,11 +235,29 @@ export default function SuggestionsPage() {
                     <div className="text-sm font-semibold text-primary">
                       {formatConfidence(suggestion.confidence)}
                     </div>
+                    <div className="mt-3 flex flex-wrap justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant={suggestion.isGoing ? "default" : "outline"}
+                        onClick={() => handleToggleGoing(suggestion)}
+                        disabled={actioningId === suggestion.id}
+                      >
+                        {suggestion.isGoing ? "Going" : "I'm going"}
+                      </Button>
+                      {suggestion.event.sourceUrl && (
+                        <Button asChild size="sm" variant="outline">
+                          <a
+                            href={suggestion.event.sourceUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Details
+                          </a>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <p className="mt-4 text-sm text-muted-foreground">
-                  {suggestion.reason}
-                </p>
                 <div className="mt-3 flex flex-wrap gap-3 text-sm text-muted-foreground">
                   {suggestion.event.price && (
                     <span className="rounded-full border border-border px-3 py-1 text-xs">
@@ -231,8 +276,13 @@ export default function SuggestionsPage() {
                     </Button>
                   )}
                 </div>
+                {suggestion.isGoing && (
+                  <p className="mt-3 text-xs italic text-muted-foreground">
+                    Invite a relative to plan together (coming soon).
+                  </p>
+                )}
               </article>
-            ))}
+            )})}
 
             {suggestions.length === 0 && (
               <article className="rounded-2xl border border-dashed border-border/60 bg-card/50 p-5 shadow-sm text-sm text-muted-foreground">

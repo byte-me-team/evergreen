@@ -37,7 +37,7 @@ const baseSections: NavSection[] = [
     title: "Your spaces",
     items: [
       { title: "Dashboard", url: "/dashboard" },
-      { title: "Calendar (soon)", url: "#calendar", disabled: true },
+      { title: "Calendar", url: "/calendar" },
     ],
   },
   {

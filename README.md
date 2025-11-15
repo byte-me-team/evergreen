@@ -79,7 +79,7 @@ Every authenticated request passes through a middleware that calls an internal e
 1. Loads the user’s normalized preferences from onboarding.
 2. Pulls up to `MATCHED_SUGGESTION_EVENT_LIMIT` upcoming Espoo events from the local catalog.
 3. Sends those events to Featherless in batches of `MATCHED_SUGGESTION_MODEL_BATCH`, asking for the best matches.
-4. Saves any returned matches (or fallback placeholders) in `MatchedSuggestion` with confidence scores and reasons.
+4. Saves the model’s selections in `MatchedSuggestion` with confidence scores. The generator now enforces a `MATCHED_SUGGESTION_LOOKAHEAD_DAYS` rolling window (default 7 days) and caps how many fresh picks land on the same day (`MATCHED_SUGGESTION_MAX_PER_DAY`, default 3) so the calendar view isn’t dominated by a single weekend.
 
 The middleware annotates downstream requests with the job status so the UI knows when to poll again. `/api/suggestions` replaces the old `/api/espoo-suggestions` route and returns both the ranked events and a meta block describing `{status, missing, target}`. The dashboard slices the top 3 by confidence, while `/suggestions` shows the full set of 10 once the backfill finishes; both pages auto-refresh whenever the middleware reports that a refill is running.
 
@@ -93,7 +93,7 @@ curl -X POST http://localhost:3000/api/suggestions \
 
 `MATCHED_SUGGESTION_GATEWAY_TOKEN` must be set (any long random string works) so the middleware can authenticate the internal `/api/internal/suggestions/ensure` calls that kick off these background jobs.
 
-Set `MATCHED_SUGGESTION_ENSURE_CACHE_MS` (default 5000) if you need to adjust how long the middleware caches a “still filling” result before it pings the internal endpoint again—handy when someone keeps refreshing the page.
+Set `MATCHED_SUGGESTION_ENSURE_CACHE_MS` (default 5000) if you need to adjust how long the middleware caches a “still filling” result before it pings the internal endpoint again—handy when someone keeps refreshing the page. Use `MATCHED_SUGGESTION_LOOKAHEAD_DAYS` and `MATCHED_SUGGESTION_MAX_PER_DAY` to tweak the new distribution logic if you need a different cadence.
 
 ### Development
 

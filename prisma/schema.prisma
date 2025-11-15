@@ -123,6 +123,7 @@ model MatchedSuggestion {
   reason      String
   confidence  Float    @default(0.5)
   metadata    Json?
+  isGoing     Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
