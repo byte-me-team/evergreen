@@ -72,7 +72,14 @@ test the python api by opening localhost:8000 with the corresponding path.
 
 #### event-based suggestions
 
-The Espoo ingest script stores upcoming events in the `Event` table. Hit `/api/espoo-suggestions` with a user email to have Featherless rank those events against the user’s normalized preferences:
+The Espoo ingest script stores upcoming events in the `Event` table. Hit `/api/espoo-suggestions` with a user email to have Featherless rank those events against the user’s normalized preferences. Requests first check the cache and only call the LLM when the stored results are older than `ESPOO_SUGGESTION_CACHE_TTL_HOURS`, and the ranking query now limits candidates to the configured lookahead window (`ESPOO_EVENTS_WINDOW_DAYS`) to avoid stale suggestions. The full workflow is:
+
+1. `docker compose up web` runs `scripts/ingest-espoo.ts`, which fetches ~`ESPOO_EVENTS_LIMIT` events, stores them in `Event`, and indexes by `startTime`.
+2. Dashboard load (or any POST to `/api/espoo-suggestions`) normalizes the user’s preferences during onboarding, then:
+   - Checks `EspooSuggestionCache` for a fresh result.
+   - If missing/stale, slices the next `ESPOO_EVENTS_MODEL_LIMIT` events and calls Featherless once per user at a time.
+   - Successful responses get persisted to the cache; temporary fallbacks (e.g., concurrency errors) return stub cards plus a retry hint so the client can re-fetch automatically.
+3. The dashboard fetcher keeps a cache key per user email, shows skeleton loaders until the first response arrives, and auto-retries when the API reports a fallback so real AI matches replace the placeholder cards without a manual refresh.
 
 ```bash
 curl -X POST http://localhost:3000/api/espoo-suggestions \
