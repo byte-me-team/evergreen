@@ -67,18 +67,20 @@ export function SignupForm({
   onSubmit,
 }: SignupFormProps) {
   const defaultCity = "Espoo"
-  const cityOptions = [
-    defaultCity,
-    "Helsinki",
-    "Espoo",
-    "Vantaa",
-    "Tampere",
-    "Turku",
-    "Oulu",
-    "Jyväskylä",
-    "Kuopio",
-    "Lahti",
-  ]
+  const cityOptions = Array.from(
+    new Set([
+      defaultCity,
+      "Helsinki",
+      "Espoo",
+      "Vantaa",
+      "Tampere",
+      "Turku",
+      "Oulu",
+      "Jyväskylä",
+      "Kuopio",
+      "Lahti",
+    ])
+  )
   const normalizedCity = city || defaultCity
 
   return (
