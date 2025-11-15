@@ -21,7 +21,7 @@ import { useSession } from "next-auth/react";
 
 const navLinks = [
   { label: "Home", href: "/", icon: Home },
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+//  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
 ];
 
 export const MarketingHeader = () => {

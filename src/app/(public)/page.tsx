@@ -13,7 +13,7 @@ import type { LucideIcon } from "lucide-react";
 const highlights: { title: string; body: string; icon: LucideIcon }[] = [
   {
     title: "Initiative is yours again",
-    body: "EverGreen lets you pick pick the level of discovery, the ambiance and the guest list while we organise logistics in the background.",
+    body: "EverGreen lets you pick the level of discovery, the ambiance and the guest list while we organise logistics in the background.",
     icon: Crown,
   },
   {

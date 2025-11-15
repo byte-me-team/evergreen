@@ -72,6 +72,10 @@ export function ScheduleActivityDialog({
       setError("Please add a title and pick a date")
       return
     }
+    if (!partnerName.trim()) {
+      setError("Please add a partner")
+      return
+    }
     setSubmitting(true)
     setError(null)
     const partner = partnerId
