@@ -94,9 +94,9 @@ export default function RelativesPage() {
               {relatives.map((relative) => (
                 <article
                   key={relative.id}
-                  className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm"
+                  className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm space-y-4"
                 >
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <h2 className="text-xl font-semibold">
                         {decodeURIComponent(relative.name)}
@@ -129,7 +129,6 @@ export default function RelativesPage() {
                       </p>
                     </div>
 
-                    {/* 🌟 Modal appears on click */}
                     <CreateMatchModal
                       userId={user.id}
                       relativeId={relative.id}
