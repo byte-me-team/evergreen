@@ -23,7 +23,7 @@ const highlights: { title: string; body: string; icon: LucideIcon }[] = [
   },
   {
     title: "Connect with Family",
-    body: "Evergreen keeps kids and grandkids involved, confirms RSVPs, and syncs calendars so everyone is included.",
+    body: "Evergreen keeps children and grandchildren involved, confirms RSVPs, and syncs calendars so everyone is included.",
     icon: Share2,
   },
 ];
