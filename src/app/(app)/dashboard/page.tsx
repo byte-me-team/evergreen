@@ -56,7 +56,9 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <main className="px-6 py-10">
-        <p className="text-sm text-muted-foreground">Loading your dashboard…</p>
+        <div className="mx-auto w-full max-w-7xl">
+          <p className="text-sm text-muted-foreground">Loading your dashboard…</p>
+        </div>
       </main>
     );
   }
@@ -66,8 +68,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="bg-background">
-      <section className="mx-auto w-full max-w-7xl px-6 py-10">
+    <main>
+      <section>
         <div className="mb-8 space-y-2">
           <p className="text-sm font-semibold text-primary">
             Welcome back, {user.name || user.email}

@@ -21,8 +21,8 @@ export default function SuggestionsPage() {
   }
 
   return (
-    <main className="bg-background">
-      <section className="mx-auto w-full max-w-4xl px-6 py-10">
+    <main>
+      <section>
         <div className="mb-8 space-y-2">
           <p className="text-sm font-semibold text-primary">
             Suggestions for {user.name || user.email}

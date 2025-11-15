@@ -66,7 +66,7 @@ export function SignupForm({
   onConfirmPasswordChange,
   onSubmit,
 }: SignupFormProps) {
-  const defaultCity = "Aalto"
+  const defaultCity = "Espoo"
   const cityOptions = [
     defaultCity,
     "Helsinki",
