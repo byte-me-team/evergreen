@@ -36,7 +36,7 @@ type DashboardTile = {
 const tiles: DashboardTile[] = [
   {
     title: "Suggestions",
-    subtitle: "AI plans & events",
+    subtitle: "",
     href: "/suggestions",
     accent: "from-primary/25 via-primary/5 to-transparent",
     badge: "Live ideas",
@@ -48,7 +48,7 @@ const tiles: DashboardTile[] = [
   },
   {
     title: "Calendar",
-    subtitle: "Ritual anchors",
+    subtitle: "",
     href: "/calendar",
     accent: "from-cyan-400/20 via-cyan-400/10 to-transparent",
     cols: "lg:col-span-2",
@@ -57,7 +57,7 @@ const tiles: DashboardTile[] = [
   },
   {
     title: "Loved ones",
-    subtitle: "Care circles",
+    subtitle: "",
     href: "/relative",
     accent: "from-fuchsia-400/20 via-fuchsia-400/10 to-transparent",
     cols: "lg:col-span-2",
@@ -66,7 +66,7 @@ const tiles: DashboardTile[] = [
   },
   {
     title: "Health log",
-    subtitle: "Vitals & meds",
+    subtitle: "",
     href: "/health",
     accent: "from-rose-400/20 via-rose-400/10 to-transparent",
     cols: "lg:col-span-2",
@@ -74,8 +74,8 @@ const tiles: DashboardTile[] = [
     icon: Activity,
   },
   {
-    title: "Invite team",
-    subtitle: "Send links",
+    title: "Invite people",
+    subtitle: "",
     href: "/invite",
     accent: "from-emerald-400/20 via-emerald-400/10 to-transparent",
     hero: "icon",
@@ -83,7 +83,7 @@ const tiles: DashboardTile[] = [
   },
   {
     title: "Activity Log",
-    subtitle: "History feed",
+    subtitle: "",
     href: "/feed",
     accent: "from-border/60 via-card/70 to-card/80",
     badge: "Coming soon",
@@ -120,7 +120,7 @@ export default function DashboardPage() {
             </p>
             <h1 className="text-3xl font-semibold">Command center</h1>
             <p className="text-base text-muted-foreground">
-              Tap a tile to jump into planning, live events, or team rituals. Evergreen keeps the logistics stitched together while you pick the vibe.
+              Tap a tile to jump into planning, discovery, or viewing loved ones.
             </p>
           </div>
 
