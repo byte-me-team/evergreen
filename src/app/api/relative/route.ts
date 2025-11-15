@@ -28,3 +28,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const userId = url.searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+    }
+
+    const relatives = await prisma.relative.findMany({
+      where: { userId }
+    });
+
+    return NextResponse.json(relatives);
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}

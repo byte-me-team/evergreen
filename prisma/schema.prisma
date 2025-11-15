@@ -18,7 +18,7 @@ model User {
   updatedAt     DateTime          @updatedAt
 
   preferences   UserPreferences?
-  relatives     Relative?
+  relatives     Relative[]
   accounts      Account[]
   sessions      Session[]
   matchesAsUser Match[]          @relation("UserMatches")
@@ -39,7 +39,7 @@ model UserPreferences {
 
 model Relative {
   id                String @id @default(cuid())
-  userId            String   @unique
+  userId            String
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   name              String 
