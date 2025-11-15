@@ -3,13 +3,17 @@
 import { FormEvent, useState } from "react";
 import { useSession } from "next-auth/react";
 import { InviteForm } from "@/components/invite-form";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function OnboardingBasicPage() {
   const { data: session } = useSession();
-  const userId = session?.user?.id; // <-- get ID here
+  const userId = session?.user?.id;
+  const router = useRouter();
 
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [inviteLink, setInviteLink] = useState("");
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -26,17 +30,16 @@ export default function OnboardingBasicPage() {
 
     setError(null);
 
-    const inviteLink = `${window.location.origin}/relative?name=${encodeURIComponent(
-      name
-    )}&id=${userId}`;
+    const link = `${window.location.origin}/relative/${userId}/${name}`;
+    setInviteLink(link);
 
-
+    // Try native share first
     if (navigator.share) {
       try {
         await navigator.share({
           title: "Invite Link",
           text: `Invite ${name} to join`,
-          url: inviteLink,
+          url: link,
         });
         return;
       } catch (err) {
@@ -44,7 +47,8 @@ export default function OnboardingBasicPage() {
       }
     }
 
-    await navigator.clipboard.writeText(inviteLink);
+    // Fallback: copy to clipboard
+    await navigator.clipboard.writeText(link);
     alert("Invite link copied to clipboard!");
   };
 
@@ -65,8 +69,15 @@ export default function OnboardingBasicPage() {
             if (error) setError(null);
             setName(value);
           }}
+          buttonLabel="Share"
           onSubmit={handleSubmit}
-          footer={<p className="text-center text-sm text-muted-foreground" />}
+          footer={
+            <div className="flex flex-col gap-3 mt-4">
+              <Button variant="ghost" onClick={() => router.push("/dashboard")}>
+                Back to Dashboard
+              </Button>
+            </div>
+          }
         />
       </section>
     </main>

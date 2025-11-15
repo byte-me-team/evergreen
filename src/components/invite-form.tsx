@@ -52,7 +52,7 @@ export function InviteForm({
         <form onSubmit={onSubmit} className="space-y-6">
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="onboarding-name">Name (optional)</FieldLabel>
+              <FieldLabel htmlFor="onboarding-name">Name</FieldLabel>
               <Input
                 id="onboarding-name"
                 type="text"
