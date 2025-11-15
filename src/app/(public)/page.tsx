@@ -23,7 +23,7 @@ const highlights: { title: string; body: string; icon: LucideIcon }[] = [
   },
   {
     title: "Connect with Family",
-    body: "Evergreen keeps kids and grandkids involved, confirms RSVPs, and syncs calendars so everyone is included.",
+    body: "Evergreen keeps children and grandchildren involved, confirms RSVPs, and syncs calendars so everyone is included.",
     icon: Share2,
   },
 ];
@@ -58,7 +58,7 @@ export default function Home() {
               </p>
               <p className="text-base text-muted-foreground sm:text-lg">
                 A subtle support for seniors wanting to reconnect their loved ones. We pair honest
-                data with respectful AI nudges so being connected is as easy as it can be.
+                data with safe AI match-making so being connected is as easy as it can be.
               </p>
               <p className="text-sm text-muted-foreground/80">
                 Built at Junction 2025.
