@@ -12,18 +12,18 @@ import type { LucideIcon } from "lucide-react";
 
 const highlights: { title: string; body: string; icon: LucideIcon }[] = [
   {
-    title: "Initiative stays with them",
-    body: "Evergreen hands the reins back to the elder. They pick the vibe, the pace, and the guest list while we orchestrate logistics in the background.",
+    title: "Initiative is yours again",
+    body: "EverGreen lets you pick pick the level of discovery, the ambiance and the guest list while we organise logistics in the background.",
     icon: Crown,
   },
   {
-    title: "Gentle pushes toward new joy",
-    body: "We suggest fresh activities, handle the planning, and pair them with relatives who would love to join—no overwhelm, just possibilities.",
+    title: "Gentle pushes toward new discoveries",
+    body: "We suggest new activities, handle the planning, and inform you of relatives who would love to join.",
     icon: Compass,
   },
   {
-    title: "Family plugged in automatically",
-    body: "Evergreen keeps kids and grandkids looped in, confirms RSVPs, and syncs calendars so everyone feels involved without constant back-and-forth.",
+    title: "Connect with Family",
+    body: "Evergreen keeps kids and grandkids involved, confirms RSVPs, and syncs calendars so everyone is included.",
     icon: Share2,
   },
 ];
@@ -51,19 +51,17 @@ export default function Home() {
             </div>
             <div className="space-y-3">
               <h1 className="text-5xl font-black uppercase leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-                EVERGREEN
+                EverGreen
               </h1>
               <p className="text-xl font-medium text-primary/90">
-                The gentle bridge from a lonely dystopia to a shared utopia
+                There's no age limit for Utopia
               </p>
               <p className="text-base text-muted-foreground sm:text-lg">
-                A calm intervention for families drifting apart. We pair honest
-                data with respectful AI nudges so no one has to be the nagging
-                relative or the forgotten grandparent.
+                A subtle support for seniors wanting to reconnect their loved ones. We pair honest
+                data with respectful AI nudges so being connected is as easy as it can be.
               </p>
               <p className="text-sm text-muted-foreground/80">
-                Built at Junction 2025. Designed to plug directly into production
-                APIs once the hackathon dust settles.
+                Built at Junction 2025.
               </p>
             </div>
             <div className="flex flex-col gap-4 sm:flex-row">
@@ -92,11 +90,10 @@ export default function Home() {
                 className="mx-auto mb-6 h-auto w-52 sm:w-64"
               />
               <p className="text-sm uppercase tracking-[0.35em] text-primary">
-                Rooted in togetherness
+                Rooted in friendship
               </p>
               <p className="mt-3 text-lg font-semibold">
-                Invite AI to handle the relentless logistics so you can stay
-                soft, human, and present.
+                Allow AI to handle the logistics so you can be present.
               </p>
             </div>
           </div>

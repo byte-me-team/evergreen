@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 
+type Params = Promise<{ id: string }>
+
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id?: string } }
-) {
+  { params }: { params: Params }
+): Promise<NextResponse> {
+  const { id } = await params
+
   try {
     let suggestionId = params?.id;
     if (!suggestionId) {
@@ -79,3 +83,4 @@ export async function PATCH(
     );
   }
 }
+

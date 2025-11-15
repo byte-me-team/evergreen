@@ -78,7 +78,7 @@ export default function SignInPage() {
         <div className="grid w-full items-start gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-8">
             <h1 className="text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-              Slip back into Evergreen and keep the momentum glowing
+              We've got plenty of new activities to explore
             </h1>
           </div>
           <div className="relative">
