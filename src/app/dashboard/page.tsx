@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-<<<<<<< HEAD
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   MatchedSuggestion,
@@ -9,9 +8,6 @@ import {
   fetchMatchedSuggestions,
   markSuggestionAttendance,
 } from "@/lib/client/matched-suggestions";
-=======
-import { useEffect, useRef, useState } from "react";
->>>>>>> main
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { formatConfidence, formatEventDate } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
