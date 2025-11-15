@@ -73,7 +73,7 @@ export default function OnboardingBasicPage() {
           onSubmit={handleSubmit}
           footer={
             <div className="flex flex-col gap-3 mt-4">
-              <Button variant="ghost" onClick={() => router.push("/dashboard")}>
+              <Button type="button" variant="ghost" onClick={() => router.push("/dashboard")}>
                 Back to Dashboard
               </Button>
             </div>
