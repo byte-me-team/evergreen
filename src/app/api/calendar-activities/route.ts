@@ -55,6 +55,8 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+  console.log("prisma.activityHistory:", prisma.activityHistory)
+  console.log("prisma.calendarActivity:", prisma.calendarActivity)
 
   const {
     title,
