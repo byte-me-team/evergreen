@@ -1,281 +1,82 @@
-YUHHHHHHHH CHANGE
+# Evergreen — Social platform for the elderly to participate in activities with their loved ones
 
 
+![Evergreen](https://img.shields.io/badge/Evergreen-v1.0.0-0B8F55)
+![Next.js](https://img.shields.io/badge/Next.js-000?logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwindcss&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white)
+![Auth.js](https://img.shields.io/badge/Auth.js-000?logo=nextdotjs&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![Featherless AI](https://img.shields.io/badge/Featherless_AI-6E59A5)
 
-# Aging With AI — Architectural Overview
+Evergreen is a web app that helps older adults find things to do with their loved ones. Users share what they enjoy, invite family or friends, and get AI-ranked recommendations for nearby events and at-home activities—all through an accessible, senior-friendly interface.
 
-## 0. Development
+- Built with **Next.js, TypeScript, Tailwind CSS 4, Prisma, PostgreSQL, Auth.js**, and **Docker**.
+- AI assistance via **Featherless** for understanding preferences, creating joint plans, keywording events, and generating lightweight wellness/activity ideas.
+- Event data comes from the **Espoo Linked Events API**, merged with user preferences for relevance.
 
-### Getting Started
+## Why We Built This
+- Loneliness grows with age; one-third of older adults experience social isolation.
+- Many apps assume tech confidence and exclude people with deteriorating eyesight or mobility.
+- Evergreen gives seniors agency: they propose outings, invite loved ones, and see options tailored to what everyone enjoys—reviving traditions, discovering new hobbies, and making shared experiences effortless.
 
-#### environment variables
+## Product Snapshot
+- **Accessible onboarding** collects interests, dislikes, mobility considerations, and city; preferences are normalized by LLM into structured profiles.
+- **Personalized ideas**: AI-generated general suggestions plus real nearby events (Espoo Linked Events) ranked by what the senior and their circle like.
+- **Loved ones & invites**: add relatives/friends, capture their interests, and get joint activity matches.
+- **Dashboard & planner**: activity feed, calendar entries, health log, and quick invites in one place.
+- **Wellness helpers**: yoga/“micro-stretch” style prompts and daily idea nudges to keep people moving even when staying home.
 
-Copy `.env.example` to `.env` and adjust the values as needed:
+## Architecture & Stack
+- **Frontend**: Next.js 16 + React 19, App Router, Tailwind CSS 4, Radix UI, lucide icons, light/dark themes.
+- **Auth**: Auth.js credentials with bcrypt password hashing, Prisma adapter, secure sessions.
+- **Data**: PostgreSQL (Docker Compose), Prisma schema for users, relatives, matches, suggestions, calendar, and history.
+- **AI**: Featherless chat completions for preference normalization, general suggestions, joint activities, event keyword generation, and wellness plans.
+- **Integrations**: Espoo Linked Events API fetch for real-world activities; Prisma Studio for database inspection, Yoga API.
 
+## Getting Started
+Prerequisites: Node 20+, npm, Docker + Docker Compose, and a Featherless API key.
+
+1) **Environment**
 ```bash
 cp .env.example .env
+# Fill in NEXTAUTH_SECRET, FEATHERLESS_API_KEY, and any DB overrides.
 ```
 
-`DATABASE_URL` points to your local Postgres instance (e.g. `localhost`), while `DATABASE_URL_DOCKER` keeps the containers wired to the in-compose `db` service. Update `NEXT_PUBLIC_APP_URL` if you expose the frontend on a different hostname. `NEXTAUTH_URL` should match the public origin (e.g. `http://localhost:3000`) and `NEXTAUTH_SECRET` must be a long random string (generate via `openssl rand -base64 32`).
-
-#### add Featherless.ai api key
-
-to the .env file add (replace ... with actual key):
-```
-FEATHERLESS_API_KEY=...
-```
-
-#### run the dev server
-
-to start the server run:
+2) **Database**
 ```bash
-docker compose up web
+docker compose up -d db
 ```
 
-This command installs dependencies (cached in the `web-node-modules` volume), generates the Prisma client, pushes the schema, syncs the database, ingests the next few days of Espoo events, and starts the Next.js dev server on port 3000.
-
-You can refresh the event catalog manually at any time (`ESPOO_EVENTS_WINDOW_DAYS` controls the lookahead window and `ESPOO_EVENTS_LIMIT` caps the fetch size). By default the ingest script skips work once events exist; set `ESPOO_FORCE_REFRESH=true` in `.env` if you need a fresh pull for debugging:
-
+3) **Install & prime Prisma**
 ```bash
-npm run ingest:events
+npm install
+npx prisma generate
+npx prisma db push
 ```
 
-#### authentication
-
-Real authentication is now powered by Auth.js + Prisma. The onboarding form creates a user record (with a bcrypt-hashed password) and the API route `/api/auth/[...nextauth]` manages sessions. To test sign-in manually you can also call the credentials endpoint via `curl`:
-
+4) **Run the app locally**
 ```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"demo@example.com","password":"supersafepassword","name":"Demo"}'
+npm run dev   # http://localhost:3000
 ```
+Optional: `docker compose up studio` (Prisma Studio on port 5555) or use the containerized dev server via `docker compose up web` if you prefer running Node inside Docker.
 
-Then log in with the UI or via `curl --request POST http://localhost:3000/api/auth/callback/credentials ...` if needed.
+## Key Commands
+- `npm run dev` — Next.js dev server (Turbopack).
+- `npm run build` / `npm start` — production build and start.
+- `npm run prisma:studio` — open Prisma Studio locally.
 
-### create an encryption key
+## AI Usage & Data Privacy
+- We send **preference text and event context** to Featherless to normalize interests, create joint plans, draft yoga/active ideas, and to generate keywords for the Espoo events search. Raw chat history is not stored; the original onboarding text is saved alongside the normalized profile to let users edit later.
+- **Passwords are bcrypt-hashed**, sessions go through Auth.js/Prisma, and user/relative data is stored in PostgreSQL.
+- Keep secrets in `.env`, prefer long random values for `NEXTAUTH_SECRET`, and rotate the Featherless key regularly. Avoid placing personal health information in free-text fields; only supply what is necessary for recommendations.
 
-to create an encryption key run this script:
-```bash
-./scripts/create_new_encryption_key.sh
-```
+## Deployment Notes
+- Expect outgoing HTTP to the Espoo Linked Events API and Featherless. Ensure those endpoints are allowed in your environment.
+- Set `NEXTAUTH_URL`/`NEXT_PUBLIC_APP_URL` to the public origin in production.
+- Run `npx prisma db push` (or migrations) against your production database before starting `next start`.
 
-#### viewing the project
-
-Open localhost:3000 with your browser to see the website.
-
-To start the Prisma Studio dashboard on port 5555, run:
-
-```bash
-docker compose up studio
-```
-
-You can also run `docker compose up` without arguments to bring up `db`, `web`, and `studio` simultaneously. Once studio is running, open [http://localhost:5555](http://localhost:5555) to explore the database.
-
-test the python api by opening localhost:8000 with the corresponding path.
-
-#### event-based suggestions
-
-The previous Espoo Linked Events workflow (middleware, background jobs, cached suggestions, etc.) has been removed. The dashboard, calendar, and suggestions pages now render placeholder content only so you can rebuild a new flow from scratch without having to unwind any of the old logic.
-
-### Development
-
-#### using prisma ORM
-
-to import prisma you can do this
-```typescript
-import { prisma } from "@/lib/prisma";
-```
-
-## 1. Concept
-
-A planning and activity-matching system for older adults (~65+) who tend to stay at home.  
-The goal is to encourage small steps outside, discover enjoyable activities, and support shared outings with family members — while maintaining dignity, agency, and privacy.
-
-The system suggests relevant activities from public event sources (e.g. Espoo Linked Events), ranks them using AI, and nudges the senior with lightweight, adjustable reminders. Seniors remain fully in control: they choose, we assist.
-
-## 2. Core Requirements
-
-- Motivate seniors to try things without pressure.  
-- Provide high-quality, personalized suggestions.  
-- Encourage going outside and engaging with the city.  
-- Maintain independence, privacy, and respect.  
-- Keep the system simple to use, low friction, no gimmicks.
-
-## 3. User Flows
-
-### 3.1 Senior onboarding  
-- Senior enters free-text interests, dislikes, availability, mobility constraints, and comfort levels.  
-- AI converts the free text into a structured preference profile.  
-- The system immediately generates initial recommendations.
-
-### 3.2 Shared onboarding (relative / child / friend)  
-- Senior shares a simple invite link.  
-- The relative’s input is turned into a separate profile.  
-- The system computes a joint profile (overlap of interests, times, budget).  
-- Suggestions are adapted for activities they can enjoy together.
-
-### 3.3 Manual requests  
-- Senior can issue a request at any time of the day.  
-- Suggestions contain a short reason and a link to see more details.  
-- Seniors choose “Interested / Not now / Don’t show again”.
-
-### 3.4 Planning support  
-- If the senior is interested, the app helps with:  
-  - Details and directions  
-  - Calendar reminders  
-  - Coordination with relatives (if applicable)
-
-## 4. System Architecture
-
-### 4.1 Components
-
-- **Frontend**  
-  Simple UI for onboarding, browsing suggestions, and planning.
-
-- **Backend API**  
-  Stores user profiles, event data, system preferences, and feedback.  
-  Provides endpoints for:  
-  - Profile creation  
-  - Event storage  
-  - Suggestion generation  
-  - Feedback (positive/negative)
-
-- **Event Ingestion Layer (n8n)**  
-  Periodically pulls public events (e.g. Linked Events Espoo).  
-  Normalizes and pushes them to the backend.
-
-- **AI Layer (Featherless AI Agent)**  
-  Handles:  
-  - Free-text profile extraction  
-  - Joint profile creation  
-  - Semantic scoring of events  
-  - Optional micro-messages for nudges
-
-## 5. AI Integration Strategy
-
-### 5.1 Featherless — primary LLM engine  
-Used for all text understanding and scoring:
-
-- Extracting structured profile JSON from free text  
-- Merging two profiles into a joint profile  
-- Ranking events by relevance  
-- Producing short reasons for recommendations  
-- Generating short, friendly micro-suggestions (optional)
-
-Featherless is called by the backend using standard chat completion API endpoints.
-
-## 6. Data Models
-
-### 6.1 User profile (stored after onboarding)  
-```json
-{
-  "id": "...",
-  "name" : "...",
-  "email" : "...",
-  "emailVerified": "...",
-  "passwordHash": "...",
-  "city": "...",
-  "createdAt" : "...",
-  "updatedAt" : "...",
-  "preferences": [],
-  "relatives": [],
-  "accounts" : [],
-  "sessions" : []
-}
-```
-
-### 6.2 Event object  
-```json
-{
-  "id": "...",
-  "sourceId": "...",
-  "title": "...",
-  "description": "...",
-  "summary": "...",
-  "start_time": "...",
-  "end_time": "...",
-  "locationName": "...",
-  "locationAddress": {"lat": ..., "lon": ..., "district": "..."},
-  "city": "...",
-  "price": "...",
-  "tags": [],
-  "sourceUrl": "...",
-  "rawJson": "...",
-  "createdAt": "...",
-  "updatedAt": "...",
-  "matchedSuggestions": []
-}
-
-```
-
-### 6.3 Joint profile  
-```json
-{
-  "shared_hobbies": [],
-  "acceptable_noise_level": 2,
-  "overlap_availability": [],
-  "mutual_tags": [],
-  "constraints": {...}
-}
-```
-
-## 7. Recommendation Pipeline
-
-### Step 1 — Hard filtering (backend only)  
-Drop events that:  
-- Are outside travel radius  
-- Conflict with availability  
-- Are clearly mismatched with dislikes  
-- Are too intense or too loud
-
-### Step 2 — Semantic scoring (Featherless)  
-- Batch events in groups of ~5  
-- Call LLM with profile + events  
-- Get numeric scores and reasons  
-- Sort by score
-
-### Step 3 — Store and deliver  
-- Top results written to DB  
-- n8n reads them and delivers daily nudges
-
-## 8. n8n Workflows
-
-### 8.1 Event Fetcher (cron)  
-- Call Linked Events API  
-- Normalize  
-- Push to backend
-
-### 8.2 Daily Suggestion Sender  
-- Cron triggers at chosen times  
-- Pulls top events for each senior  
-- Formats message (optional AI tone adjustment)  
-- Sends via email/SMS/WhatsApp
-
-### 8.3 Planning Flow  
-Triggered when senior clicks “Interested”.
-
-- Create calendar reminder  
-- Send follow-up message with short plan  
-- If joint activity: notify relative
-
-## 9. Privacy Principles
-
-- Store only structured preferences, not raw chat logs.  
-- Strip personal details before sending text to Featherless.  
-- No automatic bookings; senior always approves actions.  
-- All data stays local except minimal text sent to Featherless.  
-- Minimal retention: periodic cleanup of old interactions.
-
-## 10. Future Extensions
-
-- Embeddings-based similarity search  
-- Personal adaptation model (simple weighting by accept/reject history)  
-- Mobility-aware suggestions (distance + accessibility)  
-- Social circles (suggest activities with friends in the app)  
-- Voice-based onboarding
-- Person of contact (reminded if no response for a while)
-- Group video calls for inmobile people
-
-## TO-DO's
-- daily stretching reminder
-- solo walks/cycling trips suggestions based on weather??
+## Our Motivation
+Evergreen exists so older adults don’t have to wait to be invited—they can confidently propose ideas, plan with family, and enjoy their city on their own terms. Accessible design, gentle AI guidance, and privacy-first data handling keep the focus on human connection during the golden years.
