@@ -1,4 +1,4 @@
-# Evergreen — Social platform for the elderly to participate in activities with their loved ones
+# Evergreen — Social & Health platform for the elderly
 
 
 ![Evergreen](https://img.shields.io/badge/Evergreen-v1.0.0-0B8F55)
@@ -21,6 +21,9 @@ Evergreen is a web app that helps older adults find things to do with their love
 - Loneliness grows with age; one-third of older adults experience social isolation.
 - Many apps assume tech confidence and exclude people with deteriorating eyesight or mobility.
 - Evergreen gives seniors agency: they propose outings, invite loved ones, and see options tailored to what everyone enjoys—reviving traditions, discovering new hobbies, and making shared experiences effortless.
+
+## Our Motivation
+Evergreen exists so older adults don’t have to wait to be invited—they can confidently propose ideas, plan with family, and enjoy their city on their own terms. Accessible design, gentle AI guidance, and privacy-first data handling keep the focus on human connection during the golden years.
 
 ## Product Snapshot
 - **Accessible onboarding** collects interests, dislikes, mobility considerations, and city; preferences are normalized by LLM into structured profiles.
@@ -78,5 +81,3 @@ Optional: `docker compose up studio` (Prisma Studio on port 5555) or use the con
 - Set `NEXTAUTH_URL`/`NEXT_PUBLIC_APP_URL` to the public origin in production.
 - Run `npx prisma db push` (or migrations) against your production database before starting `next start`.
 
-## Our Motivation
-Evergreen exists so older adults don’t have to wait to be invited—they can confidently propose ideas, plan with family, and enjoy their city on their own terms. Accessible design, gentle AI guidance, and privacy-first data handling keep the focus on human connection during the golden years.
