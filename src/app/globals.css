@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant contrast (&:is(.contrast *));
 
 @theme inline {
   --color-background: var(--background);
@@ -119,6 +120,40 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.contrast {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #0f172a;
+  --card-foreground: #ffffff;
+  --popover: #0f172a;
+  --popover-foreground: #ffffff;
+  --primary: #fbbf24;
+  --primary-foreground: #0b0f1a;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1f2937;
+  --muted-foreground: #e0f2fe;
+  --accent: #f97316;
+  --accent-foreground: #0b0f1a;
+  --destructive: #f87171;
+  --border: #fbbf24;
+  --input: #fbbf24;
+  --ring: #fbbf24;
+  --chart-1: #fbbf24;
+  --chart-2: #f97316;
+  --chart-3: #22d3ee;
+  --chart-4: #a78bfa;
+  --chart-5: #38bdf8;
+  --sidebar: #0b0f1a;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #f97316;
+  --sidebar-primary-foreground: #0b0f1a;
+  --sidebar-accent: #fbbf24;
+  --sidebar-accent-foreground: #0b0f1a;
+  --sidebar-border: #fbbf24;
+  --sidebar-ring: #fbbf24;
 }
 
 @keyframes skeleton-shimmer {

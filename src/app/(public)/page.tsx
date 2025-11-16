@@ -148,14 +148,14 @@ export default function Home() {
                       alt={`${partner.name} logo`}
                       width={360}
                       height={320}
-                      className="block h-auto w-[320px] max-w-full dark:hidden"
+                      className="block h-auto w-[320px] max-w-full dark:hidden contrast:hidden"
                     />
                     <Image
                       src={partner.logoDark}
                       alt={`${partner.name} logo`}
                       width={360}
                       height={320}
-                      className="hidden h-auto w-[320px] max-w-full dark:block"
+                      className="hidden h-auto w-[320px] max-w-full dark:block contrast:block"
                     />
                   </div>
                   <div className="space-y-1">
