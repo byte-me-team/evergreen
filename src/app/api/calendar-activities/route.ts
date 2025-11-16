@@ -4,7 +4,6 @@ import { startOfWeek } from "date-fns"
 
 import { prisma } from "@/lib/prisma"
 import { authOptions } from "@/lib/auth-options"
-import { ActivitySource } from "@prisma/client"
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -23,23 +22,21 @@ export async function GET() {
   })
 
   if (overdue.length) {
-    const historyData = overdue.map((entry) => ({
-      userId,
-      title: entry.title,
-      description: entry.note,
-      partnerName: entry.partnerName ?? null,
-      source: entry.source ?? ActivitySource.calendar,
-      metadata: entry.metadata ?? null,
-    }))
-
-    const overdueIds = overdue.map((entry) => entry.id)
-
-    await prisma.$transaction([
-      prisma.activityHistory.createMany({ data: historyData }),
-      prisma.calendarActivity.deleteMany({
-        where: { id: { in: overdueIds } },
-      }),
-    ])
+    await prisma.$transaction(async (tx) => {
+      for (const entry of overdue) {
+        await tx.activityHistory.create({
+          data: {
+            userId,
+            title: entry.title,
+            description: entry.note,
+            partnerName: entry.partnerName,
+            source: entry.source ?? "calendar",
+            metadata: entry.metadata,
+          },
+        })
+        await tx.calendarActivity.delete({ where: { id: entry.id } })
+      }
+    })
   }
 
   const activities = await prisma.calendarActivity.findMany({
@@ -55,23 +52,15 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
-  console.log("prisma.activityHistory:", prisma.activityHistory)
-  console.log("prisma.calendarActivity:", prisma.calendarActivity)
 
-  const {
-    title,
-    note,
-    partnerName,
-    dueDate,
-    source,
-    sourceId,
-    metadata,
-  } = (await req.json().catch(() => ({}))) as {
+  const { title, note, partnerName, dueDate, source, sourceId, metadata } = (await req.json().catch(
+    () => ({})
+  )) as {
     title?: string
     note?: string
     partnerName?: string
     dueDate?: string | null
-    source?: ActivitySource
+    source?: string
     sourceId?: string
     metadata?: Record<string, unknown>
   }
@@ -89,7 +78,7 @@ export async function POST(req: NextRequest) {
       note,
       partnerName,
       dueDate: parsedDate,
-      source: source ?? undefined, // let default(calendar) apply when undefined
+      source: source ? (source as any) : undefined,
       sourceId,
       metadata,
     },
